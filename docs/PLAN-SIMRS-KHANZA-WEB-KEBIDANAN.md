@@ -218,11 +218,11 @@ flowchart TD
 - **Definition of Done:** bisa login berdasarkan role, layout jadi, `no_rawat` baru yang dibuat PHP tidak pernah collision dengan yang dibuat Java (uji dengan data sample). ✅ **Tercapai** — login teruji di kedua mode, kedua generator nomor final dan dapat diuji read-only via `test-generator-nomor.php`.
 
 ### Fase 2 — Registrasi Pasien
-- [ ] Cari pasien lama (search by nama/no_rkm_medis/no_ktp, query ke `pasien`).
-- [ ] Form pasien baru → generate `no_rkm_medis` baru (cek pola penomoran RM Khanza, biasanya 6 digit incremental).
-- [ ] Form registrasi kunjungan → pilih poli (dari `poliklinik`, filter khusus poli kebidanan/kecantikan bila kd_poli sudah disiapkan admin Khanza) + dokter (dari `dokter`, filter `kd_sps` kebidanan).
-- [ ] Insert ke `reg_periksa` dengan `status_lanjut = 'Ralan'`, `stts = 'Belum'`.
-- **Definition of Done:** kunjungan baru tampil juga di aplikasi Java Khanza (uji lintas-aplikasi), tidak ada data ganda.
+- [x] Cari pasien lama (search by nama/no_rkm_medis/no_ktp, query ke `pasien`).
+- [x] Form pasien baru → generate `no_rkm_medis` baru (final, terkonfirmasi RSU Al-Arif).
+- [x] Form registrasi kunjungan → pilih poli (GENERAL, semua poli aktif) + dokter (GENERAL, semua dokter aktif beserta spesialisasi — keputusan eksplisit: tidak dibatasi/hardcode karena bisa ada banyak dokter kandungan/kecantikan).
+- [x] Insert ke `reg_periksa` dengan `status_lanjut = 'Ralan'`, `stts = 'Belum'`.
+- **Definition of Done:** kunjungan baru tampil juga di aplikasi Java Khanza (uji lintas-aplikasi), tidak ada data ganda. *(Kode sudah dibuat & diverifikasi manual jumlah kolom/parameter SQL; **belum diuji submit langsung di server** — ini langkah berikutnya sebelum Fase 2 dianggap tuntas.)*
 
 ### Fase 3 — Asesmen & SOAP
 - [ ] Form SOAP / vital sign → `pemeriksaan_ralan`.
