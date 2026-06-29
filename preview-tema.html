@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Preview Tema — SIMRS Khanza Web Kebidanan</title>
+    <link rel="stylesheet" href="assets/css/theme.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                RSU Al-Arif
+                <small>Klinik Kebidanan &amp; Kecantikan</small>
+            </div>
+            <nav>
+                <a href="#" class="active">Dashboard</a>
+                <a href="#">Registrasi Pasien</a>
+                <a href="#">Asesmen</a>
+                <a href="#">USG</a>
+                <a href="#">Tindakan</a>
+                <a href="#">Resep</a>
+                <a href="#">Billing</a>
+                <a href="#">Master Data</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="topbar">
+                <h1>Preview Komponen UI (Fase 0)</h1>
+                <a href="test-koneksi.php" class="btn btn-outline">Uji Koneksi DB</a>
+            </div>
+
+            <div class="card">
+                <p class="card-title">Status</p>
+                <span class="badge badge-success">Sudah Bayar</span>
+                <span class="badge badge-warning" style="margin-left:8px;">Belum</span>
+                <span class="badge badge-danger" style="margin-left:8px;">Batal</span>
+                <span class="badge badge-coming-soon" style="margin-left:8px;">Asesmen Kecantikan — Coming Soon</span>
+            </div>
+
+            <div class="card">
+                <p class="card-title">Contoh Form Registrasi</p>
+                <div class="form-row">
+                    <div>
+                        <label>Nomor RM</label>
+                        <input type="text" placeholder="000123" disabled>
+                    </div>
+                    <div>
+                        <label>Nama Pasien</label>
+                        <input type="text" placeholder="Nama lengkap">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>Poliklinik</label>
+                        <select>
+                            <option>Poli Kebidanan</option>
+                            <option>Poli Kecantikan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Dokter</label>
+                        <select>
+                            <option>dr. Contoh Spesialis</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary">Simpan Registrasi</button>
+                <button class="btn btn-outline" style="margin-left:8px;">Batal</button>
+            </div>
+
+            <div class="card">
+                <p class="card-title">Contoh Tabel Kunjungan Hari Ini</p>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>No. Rawat</th>
+                            <th>Nama Pasien</th>
+                            <th>Poli</th>
+                            <th>Dokter</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>0000123/06/2026</code></td>
+                            <td>Siti Aminah</td>
+                            <td>Kebidanan</td>
+                            <td>dr. Contoh, Sp.OG</td>
+                            <td><span class="badge badge-warning">Belum</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>0000124/06/2026</code></td>
+                            <td>Dewi Lestari</td>
+                            <td>Kebidanan</td>
+                            <td>dr. Contoh, Sp.OG</td>
+                            <td><span class="badge badge-success">Sudah</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
