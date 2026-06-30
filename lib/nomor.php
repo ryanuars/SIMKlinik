@@ -45,6 +45,41 @@ function generateNoRawat(string $tglRegistrasi): string
 }
 
 /**
+ * Generate no_reg baru untuk kombinasi dokter + tanggal registrasi.
+ *
+ * TERVERIFIKASI dari:
+ *   1. Source Java: KhanzaHMSAnjunganFingerPrint/.../DlgRegistrasi.java baris 960-975
+ *      — saat BASENOREG != 'booking', mode default:
+ *        `SELECT IFNULL(MAX(CONVERT(no_reg,SIGNED)),0) FROM reg_periksa
+ *         WHERE kd_dokter='...' AND tgl_registrasi='...'`
+ *        lalu +1, padding ke 3 digit (autoNomer3 artinya 3 digit).
+ *   2. Data riil RSU Al-Arif (screenshot 2026-06-29):
+ *        - OBG03 jam 05:00 -> no_reg = '001'
+ *        - PD01  jam 01:54 -> no_reg = '001'
+ *        Setiap dokter mulai dari '001' per hari = reset harian PER DOKTER.
+ *        Mode URUTNOREG yang berlaku di RSU Al-Arif adalah 'dokter'.
+ *
+ * @param string $kdDokter       kode dokter (dari tabel dokter)
+ * @param string $tglRegistrasi  format 'YYYY-MM-DD'
+ * @return string contoh: '001', '002', '003', dst
+ */
+function generateNoReg(string $kdDokter, string $tglRegistrasi): string
+{
+    $pdo = getKoneksi();
+
+    $stmt = $pdo->prepare(
+        "SELECT IFNULL(MAX(CONVERT(no_reg, SIGNED)), 0) AS maxnomor
+         FROM reg_periksa
+         WHERE kd_dokter = ?
+           AND tgl_registrasi = ?"
+    );
+    $stmt->execute([$kdDokter, $tglRegistrasi]);
+    $maxNomor = (int) $stmt->fetch()['maxnomor'];
+
+    return str_pad((string) ($maxNomor + 1), 3, '0', STR_PAD_LEFT);
+}
+
+/**
  * Generate no_rkm_medis baru.
  *
  * STATUS: ✅ FINAL — dikonfirmasi langsung oleh RSU Al-Arif (2026-06-29).

@@ -20,17 +20,17 @@ $kataKunci = trim($_GET['q'] ?? '');
 $hasil = [];
 
 if ($kataKunci !== '') {
-    // Cari berdasarkan no_rkm_medis, nama, atau no_ktp sekaligus.
     $stmt = $pdo->prepare(
         "SELECT no_rkm_medis, nm_pasien, no_ktp, jk, tgl_lahir, alamat, no_tlp
          FROM pasien
-         WHERE no_rkm_medis LIKE :kw
-            OR nm_pasien LIKE :kw
-            OR no_ktp LIKE :kw
+         WHERE no_rkm_medis LIKE ?
+            OR nm_pasien    LIKE ?
+            OR no_ktp       LIKE ?
          ORDER BY nm_pasien ASC
          LIMIT 30"
     );
-    $stmt->execute(['kw' => '%' . $kataKunci . '%']);
+    $cari = '%' . $kataKunci . '%';
+    $stmt->execute([$cari, $cari, $cari]);
     $hasil = $stmt->fetchAll();
 }
 

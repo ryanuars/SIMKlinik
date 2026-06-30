@@ -72,6 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             $noRawatBaru = generateNoRawat($tglRegistrasi);
+            $noRegBaru   = generateNoReg($kdDokter, $tglRegistrasi);
 
             // Hitung umur saat registrasi (kolom umurdaftar + sttsumur di reg_periksa)
             $lahir = new DateTime($pasien['tgl_lahir']);
@@ -85,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     kd_poli, p_jawab, almt_pj, hubunganpj, biaya_reg, stts, stts_daftar,
                     status_lanjut, kd_pj, umurdaftar, sttsumur, status_bayar, status_poli
                 ) VALUES (
-                    '', ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?,
                     ?, ?, ?, ?, ?, ?, ?,
                     ?, ?, ?, ?, ?, ?
                 )"
@@ -99,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Jika nanti dibutuhkan pembedaan "kunjungan pertama ke poli ini",
             // bisa ditambah logika cek riwayat reg_periksa per kd_poli di Fase lanjutan.
             $stmt->execute([
-                $noRawatBaru, $tglRegistrasi, date('H:i:s'), $kdDokter, $noRkmMedis,
+                $noRegBaru, $noRawatBaru, $tglRegistrasi, date('H:i:s'), $kdDokter, $noRkmMedis,
                 $kdPoli, $pasien['nm_pasien'], '', 'DIRI SENDIRI', 0, 'Belum', 'Lama',
                 'Ralan', $kdPj, $umurTahun, 'Th', 'Belum Bayar', 'Lama',
             ]);
