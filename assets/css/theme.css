@@ -60,17 +60,27 @@ body {
 
 /* ---------- Layout: Sidebar + Topbar ---------- */
 
+/* ─── Desktop-first layout ──────────────────────────────────────────────── */
 .app-shell {
     display: flex;
     min-height: 100vh;
+    position: relative;
 }
 
+/* Sidebar base (Desktop) */
 .sidebar {
-    width: 240px;
+    width: 245px;
+    flex-shrink: 0;
     background: var(--color-sidebar-bg);
     color: var(--color-sidebar-text);
     padding: 24px 16px;
-    flex-shrink: 0;
+    /* Animasi collapse desktop */
+    transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+                padding 0.28s ease,
+                opacity 0.2s ease;
+    overflow: hidden;
+    white-space: nowrap;
+    z-index: 100; /* Desktop: di belakang overlay (tidak ada overlay di desktop) */
 }
 
 .sidebar .brand {
@@ -111,9 +121,12 @@ body {
     font-weight: 600;
 }
 
+/* Konten utama */
 .main-content {
     flex: 1;
     padding: 28px 32px;
+    min-width: 0; /* cegah konten overflow keluar flexbox */
+    transition: flex 0.28s ease;
 }
 
 .topbar {
@@ -121,12 +134,25 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .topbar h1 {
     font-size: 20px;
     margin: 0;
     color: var(--color-text);
+}
+
+/* Overlay backdrop — tersembunyi secara default di SEMUA ukuran layar */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0; /* top/right/bottom/left: 0 */
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 1040; /* di bawah sidebar mobile (1050), di atas konten */
+    cursor: pointer;
 }
 
 /* ---------- Card ---------- */
@@ -168,11 +194,14 @@ body {
 
 .btn-primary {
     background: var(--color-primary);
-    color: #fff;
+    color: #fff !important;
 }
 
-.btn-primary:hover {
-    background: var(--color-primary-hover);
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background: var(--color-primary-hover) !important;
+    color: #fff !important;
 }
 
 .btn-outline {
@@ -181,18 +210,91 @@ body {
     border: 1.5px solid var(--color-primary);
 }
 
-.btn-outline:hover {
+.btn-outline:hover,
+.btn-outline:focus,
+.btn-outline:active {
+    background: var(--color-primary) !important;
+    color: #fff !important;
+}
+
+.btn-act {
+    padding: 3px 9px;
+    font-size: 11.5px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all .15s ease;
+}
+
+.btn-act.btn-outline {
+    background: #ffffff;
+    color: var(--color-primary) !important;
+    border: 1.5px solid var(--color-primary);
+}
+
+.btn-act.btn-outline:hover,
+.btn-act.btn-outline:focus,
+.btn-act.btn-outline:active {
+    background: var(--color-primary) !important;
+    color: #ffffff !important;
+}
+
+.btn-act.btn-primary {
     background: var(--color-primary);
-    color: #fff;
+    color: #ffffff !important;
+}
+
+.btn-act.btn-primary:hover,
+.btn-act.btn-primary:focus,
+.btn-act.btn-primary:active {
+    background: var(--color-primary-hover) !important;
+    color: #ffffff !important;
 }
 
 .btn-danger {
     background: var(--color-danger);
-    color: #fff;
+    color: #fff !important;
 }
 
 .btn:active {
     transform: scale(0.98);
+}
+
+/* ---------- Patient Name Link & Back Button Styling ---------- */
+.patient-link {
+    color: var(--color-primary);
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.patient-link:hover,
+.patient-link:focus {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1.5px solid var(--color-border);
+    background: #ffffff;
+    color: var(--color-text);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.btn-back:hover,
+.btn-back:focus {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: #FDF6F8;
+    text-decoration: none;
 }
 
 /* ---------- Forms ---------- */
@@ -330,3 +432,140 @@ textarea:focus {
     padding: 11px;
     margin-top: 6px;
 }
+
+/* ---------- Sidebar Toggle Button ---------- */
+
+.btn-toggle-sidebar {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--color-primary);
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.btn-toggle-sidebar:hover,
+.btn-toggle-sidebar:focus {
+    background: var(--color-primary);
+    color: #ffffff;
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+/* ─── DESKTOP: Sidebar Collapse ───────────────────────────────────────────── */
+/* Saat .app-shell.sidebar-collapsed: sidebar menyusut, konten melebar */
+
+.app-shell.sidebar-collapsed .sidebar {
+    width: 0;
+    padding-left: 0;
+    padding-right: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.app-shell.sidebar-collapsed .main-content {
+    flex: 1 1 100%;
+}
+
+/* ─── MOBILE / TABLET (< 992px) ──────────────────────────────────────────── */
+/* Sidebar tersembunyi off-screen default. Overlay hanya tampil di mobile. */
+
+@media (max-width: 991.98px) {
+    body { font-size: 14px; }
+    h1, h2, h3, h4 { font-size: 90%; }
+
+    /* Sidebar: keluar dari document flow, posisi fixed off-screen kiri */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 250px !important; /* override collapse desktop */
+        height: 100vh;
+        z-index: 1050;
+        padding: 24px 16px;
+        opacity: 1;
+        pointer-events: none;
+        overflow-y: auto;
+        white-space: normal;
+        /* Gunakan transform — lebih smooth & GPU-accelerated */
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: none;
+    }
+
+    /* Saat .app-shell.sidebar-open: sidebar masuk ke layar */
+    .app-shell.sidebar-open .sidebar {
+        transform: translateX(0);
+        pointer-events: auto;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Overlay backdrop: tampil saat sidebar-open */
+    .app-shell.sidebar-open .sidebar-overlay {
+        display: block;
+    }
+
+    /* Konten utama selalu full-width di mobile */
+    .main-content {
+        width: 100% !important;
+        flex: 1 1 100% !important;
+        padding: 14px !important;
+        min-width: 0;
+    }
+
+    /* Desktop sidebar-collapsed tidak berlaku di mobile */
+    .app-shell.sidebar-collapsed .sidebar {
+        transform: translateX(-100%);
+        pointer-events: none;
+    }
+
+    .topbar {
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+
+    .topbar h1 {
+        font-size: 15px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .table, table, .rpt-tbl, .stk-tbl, .mut-tbl, .obs-tbl, .gin-tbl { font-size: 13px; }
+}
+
+/* ─── MOBILE KECIL (< 768px) ─────────────────────────────────────────────── */
+
+@media (max-width: 767.98px) {
+    body { font-size: 12px; }
+    .btn { font-size: 12px !important; padding: 5px 10px !important; }
+    .table, table, .rpt-tbl, .stk-tbl, .mut-tbl, .obs-tbl, .gin-tbl { font-size: 11px !important; }
+    .stat-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    .main-content {
+        padding: 10px !important;
+    }
+}
+
+/* ─── Utility: Tabel Scroll Horizontal ───────────────────────────────────── */
+.table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+

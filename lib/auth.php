@@ -165,6 +165,22 @@ function mulaiSession(HasilLogin $hasil): void
 }
 
 /**
+ * Dapatkan URL login.php secara dinamis berdasarkan lokasi proyek.
+ * Mencegah redirect nyasar ke http://localhost/login.php ketika proyek
+ * diakses dari sub-folder (misal /simklinik/asesmen/kebidanan-medis.php).
+ */
+function getLoginUrl(): string
+{
+    $docRoot = realpath($_SERVER['DOCUMENT_ROOT'] ?? '');
+    $appRoot = realpath(__DIR__ . '/..');
+    if ($docRoot && $appRoot && strpos($appRoot, $docRoot) === 0) {
+        $base = str_replace('\\', '/', substr($appRoot, strlen($docRoot)));
+        return rtrim($base, '/') . '/login.php';
+    }
+    return '/simklinik/login.php';
+}
+
+/**
  * Cek apakah ada session aktif; redirect ke login.php jika belum.
  * Panggil di awal setiap halaman yang butuh login.
  */
@@ -174,7 +190,7 @@ function wajibLogin(): void
         session_start();
     }
     if (empty($_SESSION['role']) || empty($_SESSION['id_user'])) {
-        header('Location: /login.php');
+        header('Location: ' . getLoginUrl());
         exit;
     }
 }
@@ -197,3 +213,19 @@ function logout(): void
     $_SESSION = [];
     session_destroy();
 }
+
+/**
+ * Cek apakah pasien/no_rawat sudah lunas (Sudah Bayar).
+ */
+function isSudahBayar(string $noRawat, ?PDO $pdo = null): bool
+{
+    if ($noRawat === '') return false;
+    if (!$pdo) {
+        $pdo = getKoneksi();
+    }
+    $stmt = $pdo->prepare("SELECT status_bayar FROM reg_periksa WHERE no_rawat = ?");
+    $stmt->execute([$noRawat]);
+    $status = $stmt->fetchColumn();
+    return ($status === 'Sudah Bayar');
+}
+

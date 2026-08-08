@@ -17,6 +17,7 @@ wajibLogin();
 $pdo = getKoneksi();
 
 $kataKunci = trim($_GET['q'] ?? '');
+$mode = trim($_GET['mode'] ?? '');
 $hasil = [];
 
 if ($kataKunci !== '') {
@@ -34,8 +35,8 @@ if ($kataKunci !== '') {
     $hasil = $stmt->fetchAll();
 }
 
-$halamanAktif = 'pasien';
-$judulHalaman = 'Cari Pasien';
+$halamanAktif = $mode === 'asesmen' ? 'asesmen' : 'pasien';
+$judulHalaman = $mode === 'asesmen' ? 'Cari Pasien — Masuk Asesmen' : 'Cari Pasien';
 $baseAsset = '../';
 require __DIR__ . '/../lib/layout_header.php';
 ?>
@@ -62,7 +63,9 @@ require __DIR__ . '/../lib/layout_header.php';
         <div class="alert alert-warning">
             Pasien tidak ditemukan untuk kata kunci "<?= htmlspecialchars($kataKunci) ?>".
         </div>
+        <?php if ($mode !== 'asesmen'): ?>
         <a href="daftar-baru.php" class="btn btn-primary">+ Daftarkan Sebagai Pasien Baru</a>
+        <?php endif; ?>
     <?php else: ?>
         <table class="table">
             <thead>
@@ -84,10 +87,33 @@ require __DIR__ . '/../lib/layout_header.php';
                     <td><?= $p['tgl_lahir'] ? htmlspecialchars(date('d-m-Y', strtotime($p['tgl_lahir']))) : '-' ?></td>
                     <td><?= htmlspecialchars($p['no_tlp'] ?? '-') ?></td>
                     <td>
+                    <?php if ($mode === 'asesmen'): ?>
+                        <?php
+                        // Cari no_rawat terbaru pasien ini
+                        $stmtRawat = $pdo->prepare(
+                            "SELECT no_rawat FROM reg_periksa WHERE no_rkm_medis=? ORDER BY tgl_registrasi DESC, no_rawat DESC LIMIT 1"
+                        );
+                        $stmtRawat->execute([$p['no_rkm_medis']]);
+                        $noRawatTerbaru = $stmtRawat->fetchColumn();
+                        ?>
+                        <?php if ($noRawatTerbaru): ?>
+                            <a href="../asesmen/pilih.php?no_rawat=<?= urlencode($noRawatTerbaru) ?>"
+                               class="btn btn-primary" style="padding:6px 14px;font-size:12.5px;">
+                                Pilih Kunjungan
+                            </a>
+                        <?php else: ?>
+                            <span class="text-muted" style="font-size:12px;">Belum ada kunjungan</span>
+                            <a href="registrasi.php?no_rkm_medis=<?= urlencode($p['no_rkm_medis']) ?>"
+                               class="btn btn-outline" style="padding:4px 10px;font-size:12px;margin-left:6px;">
+                                Daftar Dulu
+                            </a>
+                        <?php endif; ?>
+                    <?php else: ?>
                         <a href="registrasi.php?no_rkm_medis=<?= urlencode($p['no_rkm_medis']) ?>"
                            class="btn btn-primary" style="padding:6px 14px;font-size:12.5px;">
                             Daftarkan Kunjungan
                         </a>
+                    <?php endif; ?>
                     </td>
                 </tr>
                 <?php endforeach; ?>

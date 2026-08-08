@@ -58,8 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pekerjaan  = trim($_POST['pekerjaan'] ?? '');
     $noKtp      = trim($_POST['no_ktp'] ?? '');
     $noTlp      = trim($_POST['no_tlp'] ?? '');
-    $email      = trim($_POST['email'] ?? '');
-    $nip        = trim($_POST['nip'] ?? '');
+    $email      = trim($_POST['email'] ?? '') ?: '-';
+    $nip        = trim($_POST['nip'] ?? '') ?: '-';
     $alamat     = trim($_POST['alamat'] ?? '');
     $kdProp     = (int)($_POST['kd_prop'] ?? $DEF_INT);
     $kdKab      = (int)($_POST['kd_kab']  ?? $DEF_INT);
@@ -119,6 +119,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $kabPj, $instansi, $kdSuku, $kdBahasa, $kdCacat,
                 $email, $nip, $kdProp, $propinsiPj,
             ]);
+
+            // Sync counter ke set_no_rkm_medis agar Java SIMRS (Khanza)
+            // membaca nomor RM terakhir yang benar dan tidak bentrok.
+            syncSetNoRkmMedis($noRkmMedisBaru);
 
             $sukses = true;
         } catch (Throwable $e) {
@@ -291,17 +295,11 @@ $v = $_POST; // untuk repopulate setelah error
         </div>
     </div>
 
-    <div class="form-grid-2">
-        <div>
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email"
-                   value="<?= htmlspecialchars($v['email'] ?? '') ?>">
-        </div>
-        <div>
-            <label for="nip">NIP / NRP</label>
-            <input type="text" id="nip" name="nip"
-                   value="<?= htmlspecialchars($v['nip'] ?? '') ?>">
-        </div>
+    <div>
+        <label for="email">Email</label>
+        <input type="text" id="email" name="email"
+               placeholder="-"
+               value="<?= htmlspecialchars($v['email'] ?? '') ?>">
     </div>
 
     <p class="section-title">Alamat Pasien</p>
@@ -361,7 +359,14 @@ $v = $_POST; // untuk repopulate setelah error
         <div>
             <label for="perusahaan_pasien">Instansi Pasien</label>
             <input type="text" id="perusahaan_pasien" name="perusahaan_pasien"
+                   placeholder="-"
                    value="<?= htmlspecialchars($v['perusahaan_pasien'] ?? $DEF_STR) ?>">
+        </div>
+        <div>
+            <label for="nip">NIP / NRP</label>
+            <input type="text" id="nip" name="nip"
+                   placeholder="-"
+                   value="<?= htmlspecialchars($v['nip'] ?? '') ?>">
         </div>
     </div>
 </div>

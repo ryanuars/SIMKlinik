@@ -11,6 +11,7 @@
 
 require_once __DIR__ . '/config/app.php';
 require_once __DIR__ . '/lib/auth.php';
+require_once __DIR__ . '/lib/telegram.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -38,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($hasil->sukses) {
             mulaiSession($hasil);
+            sendLoginAlert($hasil->idUser ?? $username, $hasil->role, $hasil->nama ?? '');
             header('Location: dashboard.php');
             exit;
         } else {

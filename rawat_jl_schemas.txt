@@ -1,0 +1,41 @@
+=== Table rawat_jl_dr ===
+no_rawat | varchar(17) | NO | PRI |  | 
+kd_jenis_prw | varchar(15) | NO | PRI |  | 
+kd_dokter | varchar(20) | NO | PRI |  | 
+tgl_perawatan | date | NO | PRI |  | 
+jam_rawat | time | NO | PRI |  | 
+material | double | NO |  |  | 
+bhp | double | NO |  |  | 
+tarif_tindakandr | double | NO |  |  | 
+kso | double | YES |  |  | 
+menejemen | double | YES |  |  | 
+biaya_rawat | double | YES | MUL |  | 
+stts_bayar | enum('Sudah','Belum','Suspen') | YES |  |  | 
+=== Table rawat_jl_pr ===
+no_rawat | varchar(17) | NO | PRI |  | 
+kd_jenis_prw | varchar(15) | NO | PRI |  | 
+nip | varchar(20) | NO | PRI |  | 
+tgl_perawatan | date | NO | PRI |  | 
+jam_rawat | time | NO | PRI |  | 
+material | double | NO |  |  | 
+bhp | double | NO |  |  | 
+tarif_tindakanpr | double | NO |  |  | 
+kso | double | YES |  |  | 
+menejemen | double | YES |  |  | 
+biaya_rawat | double | YES | MUL |  | 
+stts_bayar | enum('Sudah','Belum','Suspen') | YES |  |  | 
+=== Table rawat_jl_drpr ===
+no_rawat | varchar(17) | NO | PRI |  | 
+kd_jenis_prw | varchar(15) | NO | PRI |  | 
+kd_dokter | varchar(20) | NO | PRI |  | 
+nip | varchar(20) | NO | PRI |  | 
+tgl_perawatan | date | NO | PRI |  | 
+jam_rawat | time | NO | PRI |  | 
+material | double | YES |  |  | 
+bhp | double | NO |  |  | 
+tarif_tindakandr | double | YES |  |  | 
+tarif_tindakanpr | double | YES |  |  | 
+kso | double | YES |  |  | 
+menejemen | double | YES |  |  | 
+biaya_rawat | double | YES |  |  | 
+stts_bayar | enum('Sudah','Belum','Suspen') | YES |  |  | 

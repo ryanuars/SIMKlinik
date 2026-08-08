@@ -108,24 +108,37 @@ function generateNoRkmMedis(): string
 {
     $pdo = getKoneksi();
 
-    // Hanya hitung MAX dari baris yang valid: tepat 6 digit & murni angka.
-    // REGEXP '^[0-9]{6}$' menyaring data kotor (5/7 digit) dan data
-    // sengaja (1 digit) yang ditemukan saat inspeksi data riil.
-    $stmt = $pdo->query(
+    // Ambil nilai tertinggi dari KEDUANYA:
+    //   1. set_no_rkm_medis — counter resmi Java SIMRS (Khanza).
+    //      Java selalu UPDATE tabel ini saat mendaftarkan pasien baru,
+    //      sehingga ini adalah "last known RM" versi Java.
+    //   2. MAX(pasien.no_rkm_medis) — data riil yang sudah tersimpan
+    //      termasuk yang didaftarkan PHP sendiri.
+    //
+    // Mengambil nilai TERTINGGI dari keduanya menjamin:
+    //   - PHP tidak menghasilkan nomor yang sudah dipakai Java.
+    //   - Java tidak menghasilkan nomor yang sudah dipakai PHP
+    //     (asalkan PHP selalu UPDATE set_no_rkm_medis setelah INSERT).
+
+    $maxFromCounter = 0;
+    try {
+        $stmtC = $pdo->query("SELECT IFNULL(MAX(CAST(no_rkm_medis AS UNSIGNED)), 0) AS m FROM set_no_rkm_medis");
+        $maxFromCounter = (int)($stmtC->fetch()['m'] ?? 0);
+    } catch (Throwable $t) {
+        // Tabel tidak ada — abaikan, gunakan MAX dari pasien saja
+    }
+
+    $stmtP = $pdo->query(
         "SELECT IFNULL(MAX(CAST(no_rkm_medis AS UNSIGNED)), 0) AS maxnomor
          FROM pasien
          WHERE no_rkm_medis REGEXP '^[0-9]{6}$'"
     );
-    $maxNomor = (int) $stmt->fetch()['maxnomor'];
+    $maxFromPasien = (int)($stmtP->fetch()['maxnomor'] ?? 0);
 
+    $maxNomor  = max($maxFromCounter, $maxFromPasien);
     $nomorBaru = $maxNomor + 1;
 
     if ($nomorBaru > 999999) {
-        // Pengaman: nomor RM maksimal 6 digit sesuai konfirmasi RSU Al-Arif.
-        // Jika batas ini tercapai, hentikan dan beri tahu admin secara
-        // eksplisit alih-alih diam-diam menghasilkan nomor 7 digit yang
-        // akan dianggap "data kotor" oleh query MAX di atas pada
-        // pendaftaran berikutnya (efek domino).
         throw new RuntimeException(
             'Nomor rekam medis 6 digit sudah mencapai batas maksimum (999999). ' .
             'Hubungi admin sistem untuk menentukan kebijakan lanjutan.'
@@ -133,4 +146,34 @@ function generateNoRkmMedis(): string
     }
 
     return str_pad((string) $nomorBaru, 6, '0', STR_PAD_LEFT);
+}
+
+/**
+ * Setelah pasien baru berhasil di-INSERT, panggil fungsi ini agar
+ * tabel set_no_rkm_medis ikut diperbarui.  Dengan demikian Java SIMRS
+ * (Khanza) yang membaca set_no_rkm_medis akan mendapat nilai yang sudah
+ * memperhitungkan pendaftaran dari PHP — sehingga tidak terjadi duplikat.
+ *
+ * @param string $noRkmMedisBaru  Nomor RM yang baru saja dipakai (6 digit)
+ */
+function syncSetNoRkmMedis(string $noRkmMedisBaru): void
+{
+    $pdo = getKoneksi();
+    try {
+        // set_no_rkm_medis hanya punya 1 baris. Java SIMRS melakukan
+        // UPDATE langsung pada baris itu. Kita lakukan hal yang sama.
+        $count = (int)$pdo->query("SELECT COUNT(*) FROM set_no_rkm_medis")->fetchColumn();
+        if ($count === 0) {
+            $pdo->prepare("INSERT INTO set_no_rkm_medis (no_rkm_medis) VALUES (?)")->execute([$noRkmMedisBaru]);
+        } else {
+            // Hanya update jika nomor baru lebih besar dari yang tersimpan
+            $pdo->prepare(
+                "UPDATE set_no_rkm_medis SET no_rkm_medis = ?
+                 WHERE CAST(no_rkm_medis AS UNSIGNED) < CAST(? AS UNSIGNED)"
+            )->execute([$noRkmMedisBaru, $noRkmMedisBaru]);
+        }
+    } catch (Throwable $t) {
+        // Tabel tidak ada, abaikan
+        error_log('[syncSetNoRkmMedis] ' . $t->getMessage());
+    }
 }
